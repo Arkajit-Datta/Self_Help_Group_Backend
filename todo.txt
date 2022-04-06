@@ -18,7 +18,7 @@ Python db --> No SQL:
         --> AGE
         --> location
         --> uploads (file paths)(local machine)
-        --> income
+        --> annual_income
         --> Optional --> occupation
         --> self help group --> id
         --> admin: yes/no
@@ -29,10 +29,13 @@ Python db --> No SQL:
     --> Creating SHG groups 
         --> deatails of all five people
             --> phone number of admin,
-            --> phone number of all other people, --> verification if everyone exits 
+            --> phone number of all other people, --> verification if everyone exits (list)
             --> group ka naam
             --> location of the group
             --> money: ?
+            --> range: low, mid, high
+            --> avg_annual_income
+            --> risk rate: %
     --> Transaction history
         --> money
         --> Transaction (withdraw and deposit) (add and withdraw)
