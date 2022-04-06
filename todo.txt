@@ -1,0 +1,39 @@
+Self Help GRoups
+    --> Searching for Self help groups (Your Area and Outside) --> sending link, searching by tags, searching (Karna hein)
+    --> Connecting induviduals (Club House) (only front end)
+    --> Creating a self help group (Authorisaiton and minimum of 5 people should be der) (Karna hein)
+    --> maintaining records (tables) (Karna hein)
+    --> Login/ SignUp/ (only front end) 
+    --> recommendation according to the background and location. (karna hein)
+    --> request has to be accepted for joining the (karna hein)
+    --> profile page verification (karna hein) --> upload pan, adhaar, voter
+    --> educational videos (demo videos) (chodo)
+    
+Python db --> No SQL:
+    --> Login 
+    --> Sign up (Registration details)
+        --> name
+        --> phone number (PK)
+        --> password
+        --> AGE
+        --> location
+        --> uploads (file paths)(local machine)
+        --> income
+        --> Optional --> occupation
+        --> self help group --> id
+        --> admin: yes/no
+    --> HOME (navigation)
+    --> Searching 
+        --> tags (location, income, occupation)
+        --> filter (only for location only front end)
+    --> Creating SHG groups 
+        --> deatails of all five people
+            --> phone number of admin,
+            --> phone number of all other people, --> verification if everyone exits 
+            --> group ka naam
+            --> location of the group
+            --> money: ?
+    --> Transaction history
+        --> money
+        --> Transaction (withdraw and deposit) (add and withdraw)
+            --> money input
