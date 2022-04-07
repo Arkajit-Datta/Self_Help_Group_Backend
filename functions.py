@@ -72,7 +72,6 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
         range = "Mid"
     elif average_annual_income<10000:
         range = "Low"
-    
     #random integer for assurance rate 
     assurance_rate = random.randint(90,100)
 
