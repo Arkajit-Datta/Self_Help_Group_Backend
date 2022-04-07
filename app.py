@@ -2,8 +2,6 @@
 This python file will have all the routes of the fast api
 '''
 #imports
-from email import message
-from msilib.schema import AdminExecuteSequence
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,7 +101,7 @@ def signup(
     )
 
 @app.post("/createshg")
-def signup(
+def createshg(
     name: str = Form(...),
     admin_phone_number: int = Form(...),
     member_phone_number_list: list = Form(...),
@@ -121,16 +119,25 @@ def signup(
     except Exception as e:
         logging.error(e)
         logging.error(" Unable to create")
-  
-    AddSelfHelpGroup(admin_phone_number= admin_phone_number, member_phone_number_list = member_phone_number_list, name= name, location=location, initial_balance=initial_balance)
+    
+    try:
+        AddSelfHelpGroup(admin_phone_number= admin_phone_number, member_phone_number_list = member_phone_number_list, name= name, location=location, initial_balance=initial_balance)
 
-    return JSONResponse(
-        status_code=200,
-        content={
-            "message": "Created group successfully",
-            "signup_result": 1
-        }
-    )
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Created group successfully",
+                "shg_creation_result": 1
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "didnt work properly",
+                "shg_creation_result": 0
+            }
+        )
 
 
 
