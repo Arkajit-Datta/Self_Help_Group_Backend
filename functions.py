@@ -97,6 +97,11 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
         logging.error(f"Error in inserting the document of shg group {name}")
     
     #updating the ShgId in each users database
+    InsertShgId(shg_id=shg_id, phone_number = admin_phone_number, is_admin=1)
+
+    #update for all the members 
+    for number in member_phone_number_list:
+        InsertShgId(shg_id=shg_id, phone_number = number, is_admin=0)
 
 
 def CheckUserExists(phone_number):
@@ -110,8 +115,15 @@ def CheckUserExists(phone_number):
         income = query_res["annual_income"]
         return income
 
-def InsertShgId(shg_id, phone_number):
-
+def InsertShgId(shg_id, phone_number,is_admin):
+    if is_admin:
+        filter = {"phone_number": phone_number}
+        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':True}}
+        res = users_collection.update_one(filter, new_values)
+    else:
+        filter = {"phone_number": phone_number}
+        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':False}}
+        res = users_collection.update_one(filter, new_values)
 # print(CheckUserExists("9493786234"))
 
 AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
