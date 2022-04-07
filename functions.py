@@ -34,3 +34,15 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         logging.error(e)
         logging.error(f"Error in inserting the users data --> {name}")
     
+def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, location, initial_balance):
+    #need to check whether admin exists or not 
+
+    #checking whether other members exist or not
+
+    #calculating the average annual salary
+
+    #estimating the range and assurance rate 
+
+    #making the record for insesrtion
+
+    
