@@ -3,6 +3,7 @@ This python file will have all the routes of the fast api
 '''
 #imports
 from email import message
+from msilib.schema import AdminExecuteSequence
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +13,7 @@ import uvicorn
 import shutil
 import os
 from functions import doSignup
+from functions import AddSelfHelpGroup
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
@@ -99,6 +101,37 @@ def signup(
             "signup_result": 1
         }
     )
+
+@app.post("/createshg")
+def signup(
+    name: str = Form(...),
+    admin_phone_number: int = Form(...),
+    member_phone_number_list: list = Form(...),
+    location: str = Form(...),
+    initial_balance: int = Form(...)):
+
+    name = name
+    admin_phone_number = admin_phone_number
+    location = location
+    initial_balance = initial_balance
+    member_phone_number_list =  member_phone_number_list
+
+    try:     
+        logging.info("created!!")
+    except Exception as e:
+        logging.error(e)
+        logging.error(" Unable to create")
+  
+    AddSelfHelpGroup(admin_phone_number= admin_phone_number, member_phone_number_list = member_phone_number_list, name= name, location=location, initial_balance=initial_balance)
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "Created group successfully",
+            "signup_result": 1
+        }
+    )
+
 
 
 if __name__ == "__main__":
