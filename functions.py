@@ -140,9 +140,45 @@ def SearchSelfHelpGroup(location):
             list_of_searches.append(x)
         return list_of_searches
 
+def JoinSelfHelpGroup(name, phone_number):
+    try:
+        query_res = shg_collection.find_one({"name":name })
+    except Exception as e:
+        logging.error(e)
+        logging.error("Issue in finding the shg_collection")
+    
+    if query_res is None:
+        return 0
+    else:
+        logging.info("SHG with the name exists")
+        shg_id = query_res["_id"]
+        list_of_numbers = query_res["phone_number_members"]
+        list_of_numbers.append(phone_number)
+        logging.info(f"The group id --> {shg_id}")
+
+        try:
+            #inserting the user into that shg group
+            filter_for_shg = {"_id": shg_id}
+            new_value_shg = {"$set": {"phone_number_members": list_of_numbers}}
+            res_for_updating_value_in_shg = shg_collection.update_one(filter_for_shg, new_value_shg)
+        except Exception as e:
+            logging.error(e)
+            logging.error("Error occured while updating the new users value in SHG collection")
+
+        try:
+            #inserting the shg details in users table
+            filter_for_user = {"phone_number": phone_number}
+            new_value_for_user = {"$set": {"shg_id": shg_id, "admin": False}}
+            res_for_updating_value_in_user = users_collection.update_one(filter_for_user, new_value_for_user)
+        except Exception as e:
+            logging.error(e)
+            logging.error("Error in updating the value of shg and admin in user collection")
+
 
 # print(CheckUserExists("9493786234"))
 
 # AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
 
 # SearchSelfHelpGroup("vellore")
+
+# JoinSelfHelpGroup("New_group","8658322524")
