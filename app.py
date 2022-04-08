@@ -103,7 +103,7 @@ def signup(
 @app.post("/createshg")
 def createshg(
     name: str = Form(...),
-    admin_phone_number: int = Form(...),
+    admin_phone_number: str = Form(...),
     member_phone_number_list: list = Form(...),
     location: str = Form(...),
     initial_balance: int = Form(...)):
@@ -113,20 +113,18 @@ def createshg(
     location = location
     initial_balance = initial_balance
     member_phone_number_list =  member_phone_number_list
-
-    try:     
-        logging.info("created!!")
-    except Exception as e:
-        logging.error(e)
-        logging.error(" Unable to create")
     
     try:
-        AddSelfHelpGroup(admin_phone_number= admin_phone_number, member_phone_number_list = member_phone_number_list, name= name, location=location, initial_balance=initial_balance)
+        result = AddSelfHelpGroup(admin_phone_number= admin_phone_number, 
+                        member_phone_number_list = member_phone_number_list, 
+                        name= name, 
+                        location=location, 
+                        initial_balance=initial_balance)
 
         return JSONResponse(
             status_code=200,
             content={
-                "message": "Created group successfully",
+                "message": result,
                 "shg_creation_result": 1
             }
         )
@@ -139,7 +137,7 @@ def createshg(
             }
         )
 
-
+#This api will search the 
 
 if __name__ == "__main__":
     uvicorn.run(

@@ -102,7 +102,7 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
     #update for all the members 
     for number in member_phone_number_list:
         InsertShgId(shg_id=shg_id, phone_number = number, is_admin=0)
-
+    return "Self Help Group Created! All members Database updated!"
 
 def CheckUserExists(phone_number):
     query = {"phone_number": phone_number}
@@ -124,6 +124,25 @@ def InsertShgId(shg_id, phone_number,is_admin):
         filter = {"phone_number": phone_number}
         new_values = {"$set": {'self_help_group_id': shg_id, 'admin':False}}
         res = users_collection.update_one(filter, new_values)
+
+#This function will search for the self help groups and would return a list of recommended self help group
+def SearchSelfHelpGroup(location):
+    try:
+        query_res = shg_collection.find({"location": location}).sort("assurance_rate", -1)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in searching for the group")
+    list_of_searches = []
+    if query_res is None:
+        return 0
+    else:
+        for x in query_res:
+            list_of_searches.append(x)
+        return list_of_searches
+
+
 # print(CheckUserExists("9493786234"))
 
-AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
+# AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
+
+# SearchSelfHelpGroup("vellore")
