@@ -71,6 +71,11 @@ def signup(
     name = name
     phone_number = phone_number
     password = password
+    name: str = Form(...),
+    phone_number: str = Form(...),
+    password: str = Form(...),
+    age: int = Form(...),
+    location: str = Form(...),
     age = age
     location = location
     annual_income = annual_income

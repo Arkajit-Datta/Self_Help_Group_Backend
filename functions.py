@@ -29,7 +29,9 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         "location": location,
         "annual_income": annual_income,
         "aadhar_upload": aadhar_path,
-        "pan_upload": pan_path
+        "pan_upload": pan_path,
+        "self_help_group_id": 0,
+        "admin": False
     }
 
     try:
@@ -84,8 +86,9 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
         "average_annual_income": average_annual_income,
         "range": range,
         "assurance_rate": assurance_rate,
-        "balance": initial_balance
+        "balance": initial_balance,
     }
+
     try:
         logging.info(f"inserting the shg group {name} details")
         result_query = shg_collection.insert_one(record)
@@ -174,6 +177,98 @@ def JoinSelfHelpGroup(name, phone_number):
             logging.error(e)
             logging.error("Error in updating the value of shg and admin in user collection")
 
+#Get the profile of any user given the phone number             
+def SeeProfile(phone_number):
+    try:
+        query_res = users_collection.find_one({"phone_number": phone_number})
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in fetching the users details")
+    
+    #initialising the dictionary
+    user_details = dict()
+    #checking if the user exists or not 
+    if query_res is None:
+        return 0
+    else:
+        user_details["name"] = query_res["name"]
+        user_details["phone_number"] = query_res["phone_number"]
+        user_details["age"] = query_res["age"]
+        user_details["location"] = query_res["location"]
+        user_details["annual_income"] = query_res["annual_income"]
+
+        try:
+            shg_id = query_res["self_help_group_id"]
+            if shg_id == 0:
+                user_details["shg_name"] = "No Self Help Groups Joined"
+                user_details["admin"] = "Not an Admin"
+            else:
+                try:
+                    #searching for the namoup", "9493786234", 1000)e of the self help group
+                    query_for_searching_name_of_shg = shg_collection.find_one({"_id": shg_id})
+                    user_details["shg_name"] = query_for_searching_name_of_shg["name"]
+                except Exception as e:
+                    logging.error(e)
+                    logging.error("Error in searching the name of SHG")
+        except Exception as e:
+            logging.error(e)
+
+#For executing the transaction
+def transaction_deposit(shg_name, phone_number, amount):
+    try:
+        query_res = shg_collection.find_one({"name": shg_name})
+        if query_res is None:
+            return 0
+        else:
+            shg_id = query_res["_id"]
+            balance = query_res["balance"]
+            balance = balance + amount
+
+    except Exception as e:
+        logging.error(e)
+
+    filter_shg_id = {"_id": shg_id}         
+    new_value_shg = {"$set": {"balance": balance}}
+    res_for_updating_value_in_shg = shg_collection.update_one(filter_shg_id, new_value_shg)
+
+    record_trans = {
+        "shg_id": shg_id,
+        "amount" : amount,
+        "credit" : True,
+        "debit" : False,
+        "phone_number": phone_number
+    }
+    query_res_transaction  = transaction_collection.insert_one(record_trans)
+
+    return balance
+
+#For executing the withdraw
+def transaction_withdraw(shg_name, phone_number, amount):
+    try:
+        query_res = shg_collection.find_one({"name": shg_name})
+        if query_res is None:
+            return 0
+        else:
+            shg_id = query_res["_id"]
+            balance = query_res["balance"]
+            balance = balance - amount
+
+    except Exception as e:
+        logging.error(e)
+
+    filter_shg_id = {"_id": shg_id}         
+    new_value_shg = {"$set": {"balance": balance}}
+    res_for_updating_value_in_shg = shg_collection.update_one(filter_shg_id, new_value_shg)
+
+    record_trans = {
+        "shg_id": shg_id,
+        "amount" : amount,
+        "credit" : False,
+        "debit" : True,
+        "phone_number": phone_number
+    }
+    query_res_transaction  = transaction_collection.insert_one(record_trans)
+    return balance
 
 # print(CheckUserExists("9493786234"))
 
@@ -182,3 +277,5 @@ def JoinSelfHelpGroup(name, phone_number):
 # SearchSelfHelpGroup("vellore")
 
 # JoinSelfHelpGroup("New_group","8658322524")
+
+# transaction_withdraw("New_group", "9493786234", 1000)
