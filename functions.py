@@ -2,6 +2,12 @@ import logging
 import random
 from pymongo import MongoClient
 
+logging.basicConfig(
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
+logging.getLogger("pipeline").setLevel(logging.INFO)
+
 try:
     client = MongoClient("mongodb+srv://arkajit:arkajit@cluster0.dmii1.mongodb.net/sahayata?retryWrites=true&w=majority")
     db = client.get_database('sahayata')
@@ -12,12 +18,6 @@ try:
 except Exception as e:
     logging.error(e)
     logging.error("Error in connecting the database")
-
-logging.basicConfig(
-    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
-)
-logger = logging.getLogger(__name__)
-logging.getLogger("pipeline").setLevel(logging.INFO)
 
 def doSignup(name, phone_number, password, age, location, annual_income,aadhar_path, pan_path):
 
