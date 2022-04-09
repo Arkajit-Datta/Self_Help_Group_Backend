@@ -30,7 +30,7 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         "annual_income": annual_income,
         "aadhar_upload": aadhar_path,
         "pan_upload": pan_path,
-        "self_help_group_id": 0,
+        "shg_id": 0,
         "admin": False
     }
 
@@ -121,11 +121,11 @@ def CheckUserExists(phone_number):
 def InsertShgId(shg_id, phone_number,is_admin):
     if is_admin:
         filter = {"phone_number": phone_number}
-        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':True}}
+        new_values = {"$set": {'shg_id': shg_id, 'admin':True}}
         res = users_collection.update_one(filter, new_values)
     else:
         filter = {"phone_number": phone_number}
-        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':False}}
+        new_values = {"$set": {'shg_id': shg_id, 'admin':False}}
         res = users_collection.update_one(filter, new_values)
 
 #This function will search for the self help groups and would return a list of recommended self help group
@@ -210,10 +210,12 @@ def SeeProfile(phone_number):
         user_details["annual_income"] = query_res["annual_income"]
 
         try:
-            shg_id = query_res["self_help_group_id"]
+            shg_id = query_res["shg_id"]
+            print(shg_id)
             if shg_id == 0:
                 user_details["shg_name"] = "No Self Help Groups Joined"
                 user_details["admin"] = "Not an Admin"
+                return user_details
             else:
                 try:
                     #searching for the namoup", "9493786234", 1000)e of the self help group
@@ -294,3 +296,4 @@ def transaction_withdraw(shg_name, phone_number, amount):
 # JoinSelfHelpGroup("New_group","8658322524")
 
 # transaction_withdraw("New_group", "9493786234", 1000)
+print(SeeProfile("9515617916"))

@@ -259,6 +259,32 @@ def depositAmount(req: transactionDepositRequest):
                 "transaction_result": 1
             }
             )
+#This api will give the user details in the profile page
+@app.post("/userProfile")
+def userProfile(phone_number: str = Form(...)):
+    try:
+        result = SeeProfile(phone_number=phone_number)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in accessing user information")
+
+    if result==0:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message":"Error in accessing user information",
+                "user_profile_result" :0
+            }
+            )
+    else:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Successfully received user information",
+                "user_profile" :result,
+                "user_profile_result":1
+            }
+        )
 
 
 
