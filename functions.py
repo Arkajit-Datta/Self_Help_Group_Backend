@@ -2,6 +2,12 @@ import logging
 import random
 from pymongo import MongoClient
 
+logging.basicConfig(
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
+logging.getLogger("pipeline").setLevel(logging.INFO)
+
 try:
     client = MongoClient("mongodb+srv://arkajit:arkajit@cluster0.dmii1.mongodb.net/sahayata?retryWrites=true&w=majority")
     db = client.get_database('sahayata')
@@ -13,12 +19,6 @@ except Exception as e:
     logging.error(e)
     logging.error("Error in connecting the database")
 
-logging.basicConfig(
-    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
-)
-logger = logging.getLogger(__name__)
-logging.getLogger("pipeline").setLevel(logging.INFO)
-
 def doSignup(name, phone_number, password, age, location, annual_income,aadhar_path, pan_path):
 
     record = {
@@ -29,7 +29,9 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         "location": location,
         "annual_income": annual_income,
         "aadhar_upload": aadhar_path,
-        "pan_upload": pan_path
+        "pan_upload": pan_path,
+        "self_help_group_id": 0,
+        "admin": False
     }
 
     try:
@@ -84,8 +86,9 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
         "average_annual_income": average_annual_income,
         "range": range,
         "assurance_rate": assurance_rate,
-        "balance": initial_balance
+        "balance": initial_balance,
     }
+
     try:
         logging.info(f"inserting the shg group {name} details")
         result_query = shg_collection.insert_one(record)
@@ -97,7 +100,12 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
         logging.error(f"Error in inserting the document of shg group {name}")
     
     #updating the ShgId in each users database
+    InsertShgId(shg_id=shg_id, phone_number = admin_phone_number, is_admin=1)
 
+    #update for all the members 
+    for number in member_phone_number_list:
+        InsertShgId(shg_id=shg_id, phone_number = number, is_admin=0)
+    return "Self Help Group Created! All members Database updated!"
 
 def CheckUserExists(phone_number):
     query = {"phone_number": phone_number}
@@ -110,8 +118,164 @@ def CheckUserExists(phone_number):
         income = query_res["annual_income"]
         return income
 
-def InsertShgId(shg_id, phone_number):
+def InsertShgId(shg_id, phone_number,is_admin):
+    if is_admin:
+        filter = {"phone_number": phone_number}
+        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':True}}
+        res = users_collection.update_one(filter, new_values)
+    else:
+        filter = {"phone_number": phone_number}
+        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':False}}
+        res = users_collection.update_one(filter, new_values)
+
+#This function will search for the self help groups and would return a list of recommended self help group
+def SearchSelfHelpGroup(location):
+    try:
+        query_res = shg_collection.find({"location": location}).sort("assurance_rate", -1)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in searching for the group")
+    list_of_searches = []
+    if query_res is None:
+        return 0
+    else:
+        for x in query_res:
+            list_of_searches.append(x)
+        return list_of_searches
+
+def JoinSelfHelpGroup(name, phone_number):
+    try:
+        query_res = shg_collection.find_one({"name":name })
+    except Exception as e:
+        logging.error(e)
+        logging.error("Issue in finding the shg_collection")
+    
+    if query_res is None:
+        return 0
+    else:
+        logging.info("SHG with the name exists")
+        shg_id = query_res["_id"]
+        list_of_numbers = query_res["phone_number_members"]
+        list_of_numbers.append(phone_number)
+        logging.info(f"The group id --> {shg_id}")
+
+        try:
+            #inserting the user into that shg group
+            filter_for_shg = {"_id": shg_id}
+            new_value_shg = {"$set": {"phone_number_members": list_of_numbers}}
+            res_for_updating_value_in_shg = shg_collection.update_one(filter_for_shg, new_value_shg)
+        except Exception as e:
+            logging.error(e)
+            logging.error("Error occured while updating the new users value in SHG collection")
+
+        try:
+            #inserting the shg details in users table
+            filter_for_user = {"phone_number": phone_number}
+            new_value_for_user = {"$set": {"shg_id": shg_id, "admin": False}}
+            res_for_updating_value_in_user = users_collection.update_one(filter_for_user, new_value_for_user)
+        except Exception as e:
+            logging.error(e)
+            logging.error("Error in updating the value of shg and admin in user collection")
+
+#Get the profile of any user given the phone number             
+def SeeProfile(phone_number):
+    try:
+        query_res = users_collection.find_one({"phone_number": phone_number})
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in fetching the users details")
+    
+    #initialising the dictionary
+    user_details = dict()
+    #checking if the user exists or not 
+    if query_res is None:
+        return 0
+    else:
+        user_details["name"] = query_res["name"]
+        user_details["phone_number"] = query_res["phone_number"]
+        user_details["age"] = query_res["age"]
+        user_details["location"] = query_res["location"]
+        user_details["annual_income"] = query_res["annual_income"]
+
+        try:
+            shg_id = query_res["self_help_group_id"]
+            if shg_id == 0:
+                user_details["shg_name"] = "No Self Help Groups Joined"
+                user_details["admin"] = "Not an Admin"
+            else:
+                try:
+                    #searching for the namoup", "9493786234", 1000)e of the self help group
+                    query_for_searching_name_of_shg = shg_collection.find_one({"_id": shg_id})
+                    user_details["shg_name"] = query_for_searching_name_of_shg["name"]
+                except Exception as e:
+                    logging.error(e)
+                    logging.error("Error in searching the name of SHG")
+        except Exception as e:
+            logging.error(e)
+
+#For executing the transaction
+def transaction_deposit(shg_name, phone_number, amount):
+    try:
+        query_res = shg_collection.find_one({"name": shg_name})
+        if query_res is None:
+            return 0
+        else:
+            shg_id = query_res["_id"]
+            balance = query_res["balance"]
+            balance = balance + amount
+
+    except Exception as e:
+        logging.error(e)
+
+    filter_shg_id = {"_id": shg_id}         
+    new_value_shg = {"$set": {"balance": balance}}
+    res_for_updating_value_in_shg = shg_collection.update_one(filter_shg_id, new_value_shg)
+
+    record_trans = {
+        "shg_id": shg_id,
+        "amount" : amount,
+        "credit" : True,
+        "debit" : False,
+        "phone_number": phone_number
+    }
+    query_res_transaction  = transaction_collection.insert_one(record_trans)
+
+    return balance
+
+#For executing the withdraw
+def transaction_withdraw(shg_name, phone_number, amount):
+    try:
+        query_res = shg_collection.find_one({"name": shg_name})
+        if query_res is None:
+            return 0
+        else:
+            shg_id = query_res["_id"]
+            balance = query_res["balance"]
+            balance = balance - amount
+
+    except Exception as e:
+        logging.error(e)
+
+    filter_shg_id = {"_id": shg_id}         
+    new_value_shg = {"$set": {"balance": balance}}
+    res_for_updating_value_in_shg = shg_collection.update_one(filter_shg_id, new_value_shg)
+
+    record_trans = {
+        "shg_id": shg_id,
+        "amount" : amount,
+        "credit" : False,
+        "debit" : True,
+        "phone_number": phone_number
+    }
+    query_res_transaction  = transaction_collection.insert_one(record_trans)
+    return balance
 
 # print(CheckUserExists("9493786234"))
 
-AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
+# AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
+
+# SearchSelfHelpGroup("vellore")
+
+# JoinSelfHelpGroup("New_group","8658322524")
+
+# transaction_withdraw("New_group", "9493786234", 1000)
