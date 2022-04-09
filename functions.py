@@ -219,7 +219,7 @@ def transaction_deposit(shg_name, phone_number, amount):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
         if query_res is None:
-            return 0
+            return -1
         else:
             shg_id = query_res["_id"]
             balance = query_res["balance"]
@@ -248,7 +248,7 @@ def transaction_withdraw(shg_name, phone_number, amount):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
         if query_res is None:
-            return 0
+            return -1
         else:
             shg_id = query_res["_id"]
             balance = query_res["balance"]
