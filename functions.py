@@ -176,6 +176,7 @@ def JoinSelfHelpGroup(name, phone_number):
         except Exception as e:
             logging.error(e)
             logging.error("Error in updating the value of shg and admin in user collection")
+    return 1
 
 #Get the profile of any user given the phone number             
 def SeeProfile(phone_number):
