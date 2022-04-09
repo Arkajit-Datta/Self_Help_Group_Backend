@@ -103,7 +103,7 @@ def signup(
     )
 
 @app.post("/createshg")
-def signup(
+def createshg(
     name: str = Form(...),
     admin_phone_number: int = Form(...),
     member_phone_number_list: list = Form(...),
