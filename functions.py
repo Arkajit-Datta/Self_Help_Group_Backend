@@ -140,6 +140,7 @@ def SearchSelfHelpGroup(location):
         return 0
     else:
         for x in query_res:
+            del x['_id']
             list_of_searches.append(x)
         return list_of_searches
 
@@ -149,6 +150,16 @@ def JoinSelfHelpGroup(name, phone_number):
     except Exception as e:
         logging.error(e)
         logging.error("Issue in finding the shg_collection")
+
+    try:
+        income =CheckUserExists(phone_number=phone_number)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Issue in checking the validity of user")
+
+    if income=="nil":
+        return 0
+
     
     if query_res is None:
         return 0
@@ -208,25 +219,28 @@ def SeeProfile(phone_number):
                     #searching for the namoup", "9493786234", 1000)e of the self help group
                     query_for_searching_name_of_shg = shg_collection.find_one({"_id": shg_id})
                     user_details["shg_name"] = query_for_searching_name_of_shg["name"]
+
                 except Exception as e:
                     logging.error(e)
                     logging.error("Error in searching the name of SHG")
+                return user_details
         except Exception as e:
             logging.error(e)
+
 
 #For executing the transaction
 def transaction_deposit(shg_name, phone_number, amount):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
-        if query_res is None:
-            return 0
-        else:
-            shg_id = query_res["_id"]
-            balance = query_res["balance"]
-            balance = balance + amount
-
     except Exception as e:
         logging.error(e)
+
+    if query_res is None:
+        return -1
+    else:
+        shg_id = query_res["_id"]
+        balance = query_res["balance"]
+        balance = balance + amount
 
     filter_shg_id = {"_id": shg_id}         
     new_value_shg = {"$set": {"balance": balance}}
