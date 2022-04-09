@@ -142,7 +142,28 @@ def createshg(
             }
         )
 
-#This api will search the 
+#This api will search the shgs 
+'''
+Function to be used --
+    SearchSelfHelpGroup() <-- Takes the input of location in string
+        Returns int(0) if there is no groups exist
+        Else would return the list of groups recommended for the particular area
+
+NOTE: To use Pydantic (BaseModel class)
+'''
+
+
+#This api will facilitiate the joining process of a person in a SHG
+'''
+Function to be used,
+    JoinSelfHelpGroup() <-- Takes the input of the self help group name and the phonenumber of the person to be added
+        Returns the integer (0) if the person is or the shg group doesnt exist
+        Else, would return integer (1) if the person joined the SHG
+
+NOTE: To use Pydantic (BaseModel class)
+'''
+
+#This api will transaction process for transacting the amount
 
 if __name__ == "__main__":
     uvicorn.run(
