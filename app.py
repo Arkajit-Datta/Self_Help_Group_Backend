@@ -168,37 +168,7 @@ Function to be used,
 NOTE: To use Pydantic (BaseModel class)
 '''
 
-#This api will transaction process for transacting the amount
 
-@app.post("/withdrawAmount")
-def withdraw(req: withdrawRequest):
-    shg_name = req.shg_name
-    phone_number = req.phone_name
-    amount = req.amount
-
-    try:
-        result = transaction_withdraw(shg_name, phone_number, amount)
-    except Exception as e:
-        logging.error(e)
-        logging.error("error in executing the transaction")
-
-    if result==-1:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "message": "There was an error in the transaction",
-                "transaction_result": 0
-            }
-        )
-    else:
-        return JSONResponse(
-            status_code= 200,
-            content={
-                "message": "Transaction Successful",
-                "balance": result,
-                "transaction_result": 1
-            }
-        )
 if __name__ == "__main__":
     uvicorn.run(
         app,
