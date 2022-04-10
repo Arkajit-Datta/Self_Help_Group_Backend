@@ -10,7 +10,6 @@ import logging
 import uvicorn
 import shutil
 import os
-
 from functions import *
 
 logging.basicConfig(
@@ -46,9 +45,25 @@ class signupRequest(BaseModel):
 
 class withdrawRequest(BaseModel):
     shg_name: str
-    phone_name: str
+    phone_number: str
     amount: int
 
+
+class searchRequest(BaseModel):
+    location: str
+
+class joinShgRequest(BaseModel):
+    shg_name: str
+    user_phone_number :str
+
+class transactionDepositRequest(BaseModel):
+    shg_name :str
+    user_phone_number :str 
+    amount :int 
+
+
+
+    
 @app.get("/")
 def root():
     logging.info("This api is up")
@@ -76,11 +91,6 @@ def signup(
     name = name
     phone_number = phone_number
     password = password
-    name: str = Form(...),
-    phone_number: str = Form(...),
-    password: str = Form(...),
-    age: int = Form(...),
-    location: str = Form(...),
     age = age
     location = location
     annual_income = annual_income
@@ -155,8 +165,36 @@ Function to be used --
         Else would return the list of groups recommended for the particular area
 
 NOTE: To use Pydantic (BaseModel class)
-'''
 
+'''
+@app.post("/searchShg")
+def searchShg(req:searchRequest):
+    location = req.location
+    try:
+        result= SearchSelfHelpGroup(location)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in search shg function")
+    
+    if len(result)==0:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "didnt work properly",
+                "shg_search_result": "not found"
+            }
+        )
+    else:
+        print(result)
+        #json_list = json.dumps(result)
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message":result
+            }
+        )
+    
 
 #This api will facilitiate the joining process of a person in a SHG
 '''
@@ -167,8 +205,133 @@ Function to be used,
 
 NOTE: To use Pydantic (BaseModel class)
 '''
+@app.post("/joinShg")
+def joinSelfHelpGroup(req: joinShgRequest):
+    shg_name= req.shg_name
+    user_phone_number=req.user_phone_number
+
+    try:
+        result = JoinSelfHelpGroup(shg_name,user_phone_number)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in join group function")
+
+    if result:
+        return JSONResponse(
+            status_code=200,
+            content= {
+                "message":"Successfully joined!",
+                "joining_result": 1
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=400,
+            content= {
+                "message":" Error in joining!",
+                "joining_result": 0
+            }
+        )
 
 
+#This api will transaction process for transacting the amount
+@app.post("/depositAmount")
+def depositAmount(req: transactionDepositRequest):
+    shg_name =req.shg_name
+    user_phone_number = req.user_phone_number
+    amount= req.amount
+    try:
+        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in amount deposit function")
+    
+    if result==-1:
+        return JSONResponse(
+            status_code=400,
+            content= {
+                "message":" Error in transacting amount",
+                "transaction_result": 0
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=200,
+            content= {
+                "message":"transaction successful",
+                "balance":result,
+                "transaction_result": 1
+            }
+        )
+#This api will give the user details in the profile page
+@app.post("/userProfile")
+def userProfile(phone_number: str = Form(...)):
+    try:
+        result = SeeProfile(phone_number=phone_number)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Error in accessing user information")
+
+    if result==0:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message":"Error in accessing user information",
+                "user_profile_result" :0
+            }
+        )
+    elif not bool(result):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message":"Error in accessing user information, returning empty dict()",
+                "user_profile_result" :0
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Successfully received user information",
+                "user_profile" :result,
+                "user_profile_result":1
+            }
+        )
+
+
+# This route will help in withdrawing the amount from the SHG
+'''
+Takes the input of SHG name, phone number of the user and amount to be withdrawn
+'''
+@app.post("/withdrawAmount")
+def withdraw(req: withdrawRequest):
+    shg_name = req.shg_name
+    phone_number = req.phone_name
+    amount = req.amount
+
+    try:
+        result = transaction_withdraw(shg_name, phone_number, amount)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in executing the transaction")
+
+    if result==-1:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "There was an error in the transaction",
+                "transaction_result": 0
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code= 200,
+            content={
+                "message": "Transaction Successful",
+                "balance": result,
+                "transaction_result": 1
+            }
+        )
 if __name__ == "__main__":
     uvicorn.run(
         app,

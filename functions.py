@@ -30,7 +30,7 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         "annual_income": annual_income,
         "aadhar_upload": aadhar_path,
         "pan_upload": pan_path,
-        "self_help_group_id": 0,
+        "shg_id": 0,
         "admin": False
     }
 
@@ -121,11 +121,11 @@ def CheckUserExists(phone_number):
 def InsertShgId(shg_id, phone_number,is_admin):
     if is_admin:
         filter = {"phone_number": phone_number}
-        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':True}}
+        new_values = {"$set": {'shg_id': shg_id, 'admin':True}}
         res = users_collection.update_one(filter, new_values)
     else:
         filter = {"phone_number": phone_number}
-        new_values = {"$set": {'self_help_group_id': shg_id, 'admin':False}}
+        new_values = {"$set": {'shg_id': shg_id, 'admin':False}}
         res = users_collection.update_one(filter, new_values)
 
 #This function will search for the self help groups and would return a list of recommended self help group
@@ -140,6 +140,7 @@ def SearchSelfHelpGroup(location):
         return 0
     else:
         for x in query_res:
+            del x['_id']
             list_of_searches.append(x)
         return list_of_searches
 
@@ -149,6 +150,16 @@ def JoinSelfHelpGroup(name, phone_number):
     except Exception as e:
         logging.error(e)
         logging.error("Issue in finding the shg_collection")
+
+    try:
+        income =CheckUserExists(phone_number=phone_number)
+    except Exception as e:
+        logging.error(e)
+        logging.error("Issue in checking the validity of user")
+
+    if income=="nil":
+        return 0
+
     
     if query_res is None:
         return 0
@@ -199,34 +210,39 @@ def SeeProfile(phone_number):
         user_details["annual_income"] = query_res["annual_income"]
 
         try:
-            shg_id = query_res["self_help_group_id"]
+            shg_id = query_res["shg_id"]
+            print(shg_id)
             if shg_id == 0:
                 user_details["shg_name"] = "No Self Help Groups Joined"
                 user_details["admin"] = "Not an Admin"
+                return user_details
             else:
                 try:
                     #searching for the namoup", "9493786234", 1000)e of the self help group
                     query_for_searching_name_of_shg = shg_collection.find_one({"_id": shg_id})
                     user_details["shg_name"] = query_for_searching_name_of_shg["name"]
+
                 except Exception as e:
                     logging.error(e)
                     logging.error("Error in searching the name of SHG")
+                return user_details
         except Exception as e:
             logging.error(e)
+
 
 #For executing the transaction
 def transaction_deposit(shg_name, phone_number, amount):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
-        if query_res is None:
-            return -1
-        else:
-            shg_id = query_res["_id"]
-            balance = query_res["balance"]
-            balance = balance + amount
-
     except Exception as e:
         logging.error(e)
+
+    if query_res is None:
+        return -1
+    else:
+        shg_id = query_res["_id"]
+        balance = query_res["balance"]
+        balance = balance + amount
 
     filter_shg_id = {"_id": shg_id}         
     new_value_shg = {"$set": {"balance": balance}}
@@ -271,12 +287,13 @@ def transaction_withdraw(shg_name, phone_number, amount):
     query_res_transaction  = transaction_collection.insert_one(record_trans)
     return balance
 
+
+'''
+Testing Purpose
+'''
 # print(CheckUserExists("9493786234"))
-
 # AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
-
 # SearchSelfHelpGroup("vellore")
-
 # JoinSelfHelpGroup("New_group","8658322524")
-
 # transaction_withdraw("New_group", "9493786234", 1000)
+# print(SeeProfile("9515617916"))
