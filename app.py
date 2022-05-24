@@ -2,6 +2,7 @@
 This python file will have all the routes of the fast api
 '''
 #imports
+from datetime import datetime
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,7 @@ import uvicorn
 import shutil
 import os
 from functions import *
+from datetime import datetime,date,time
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
@@ -47,6 +49,8 @@ class withdrawRequest(BaseModel):
     shg_name: str
     phone_number: str
     amount: int
+    date: str
+    description: str
 
 
 class searchRequest(BaseModel):
@@ -60,7 +64,16 @@ class transactionDepositRequest(BaseModel):
     shg_name :str
     user_phone_number :str 
     amount :int 
+    date : str
+    descrption : str 
 
+class storyDayRequest(BaseModel):
+    date: date
+    description : str
+
+class eventsRequest(BaseModel):
+    headings : str
+    description : str
 
 
     
@@ -240,8 +253,10 @@ def depositAmount(req: transactionDepositRequest):
     shg_name =req.shg_name
     user_phone_number = req.user_phone_number
     amount= req.amount
+    date = req.date
+    description = req.descrption
     try:
-        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount)
+        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount,date=date, description=descri)
     except Exception as e:
         logging.error(e)
         logging.error("error in amount deposit function")
@@ -308,9 +323,11 @@ def withdraw(req: withdrawRequest):
     shg_name = req.shg_name
     phone_number = req.phone_number
     amount = req.amount
+    date = req.date
+    description = req.description
 
     try:
-        result = transaction_withdraw(shg_name, phone_number, amount)
+        result = transaction_withdraw(shg_name, phone_number, amount,date, description)
     except Exception as e:
         logging.error(e)
         logging.error("error in executing the transaction")
@@ -339,8 +356,127 @@ story of the day
 
 post api --> admin where we can give the date and the description inputs
 
+
 get api --> fetch the description 
 '''
+@app.post("/storyOfTheDay")
+def story(req: storyDayRequest):
+    date = req.date
+    description = req.description
+    try:
+        result = insert_story_day(date, description)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in executing the request")
+
+    if result== False:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "There was an error in inserting the story",
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code= 200,
+            content={
+                "message": "Story inserted into the Database",
+              
+            }
+        )
+
+@app.post("/events")
+def events(req: eventsRequest):
+    heading = req.headings
+    description = req.description
+    try:
+        result = insert_events(heading, description)
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in executing the request")
+
+    if result== False:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "There was an error in inserting the events",
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code= 200,
+            content={
+                "message": "Events inserted into the Database",
+              
+            }
+        )
+@app.get("/getStory")
+def getStory():
+    try:
+         response = fetch_story_day()
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in executing the request")
+        return JSONResponse(
+            status_code=400,
+            content={
+                "message": "There was an error in getting the story",
+                "Story" : "Story will be updated soon"
+            }
+        )
+
+    if response:
+          return JSONResponse(
+            status_code= 200,
+            content={
+                "message": "The story is fetched",
+                "Story" : response
+        
+            }
+        )
+        
+    else:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "There was an error in getting the story",
+            }
+        )
+
+@app.get("/fetchEvents")
+def getEvents():
+    try:
+         response = fetch_events()
+    except Exception as e:
+        logging.error(e)
+        logging.error("error in executing the request")
+        return JSONResponse(
+            status_code=400,
+            content={
+                "message": "There was an error in getting the events",
+                "Event" : "Events will be updated soon"
+            }
+        )
+
+    if response:
+          return JSONResponse(
+            status_code= 200,
+            content={
+                "message": "The event is fetched",
+                "Events": response
+        
+            }
+        )
+        
+    else:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "There was an error in getting the event",
+            }
+        )
+
+
 
 if __name__ == "__main__":
     uvicorn.run(
