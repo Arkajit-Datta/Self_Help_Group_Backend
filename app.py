@@ -2,6 +2,7 @@
 This python file will have all the routes of the fast api
 '''
 #imports
+from datetime import datetime
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +48,8 @@ class withdrawRequest(BaseModel):
     shg_name: str
     phone_number: str
     amount: int
+    date: str
+    description: str
 
 
 class searchRequest(BaseModel):
@@ -60,6 +63,8 @@ class transactionDepositRequest(BaseModel):
     shg_name :str
     user_phone_number :str 
     amount :int 
+    date : str
+    descrption : str 
 
 
 
@@ -240,8 +245,10 @@ def depositAmount(req: transactionDepositRequest):
     shg_name =req.shg_name
     user_phone_number = req.user_phone_number
     amount= req.amount
+    date = req.date
+    description = req.descrption
     try:
-        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount)
+        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount,date=date, description=descri)
     except Exception as e:
         logging.error(e)
         logging.error("error in amount deposit function")
@@ -308,9 +315,11 @@ def withdraw(req: withdrawRequest):
     shg_name = req.shg_name
     phone_number = req.phone_number
     amount = req.amount
+    date = req.date
+    description = req.description
 
     try:
-        result = transaction_withdraw(shg_name, phone_number, amount)
+        result = transaction_withdraw(shg_name, phone_number, amount,date, description)
     except Exception as e:
         logging.error(e)
         logging.error("error in executing the transaction")

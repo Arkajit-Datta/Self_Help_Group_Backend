@@ -232,7 +232,7 @@ def SeeProfile(phone_number):
 
 
 #For executing the transaction
-def transaction_deposit(shg_name, phone_number, amount):
+def transaction_deposit(shg_name, phone_number, amount,date, description):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
     except Exception as e:
@@ -254,14 +254,16 @@ def transaction_deposit(shg_name, phone_number, amount):
         "amount" : amount,
         "credit" : True,
         "debit" : False,
-        "phone_number": phone_number
+        "phone_number": phone_number,
+        "date" : date,
+        "description" : description
     }
     query_res_transaction  = transaction_collection.insert_one(record_trans)
 
     return balance
 
 #For executing the withdraw
-def transaction_withdraw(shg_name, phone_number, amount):
+def transaction_withdraw(shg_name, phone_number, amount,date,description):
     try:
         query_res = shg_collection.find_one({"name": shg_name})
         if query_res is None:
@@ -283,8 +285,10 @@ def transaction_withdraw(shg_name, phone_number, amount):
         "amount" : amount,
         "credit" : False,
         "debit" : True,
-        "phone_number": phone_number
-    }
+        "phone_number": phone_number,
+        "date": date,
+        "description": description
+    } 
     query_res_transaction  = transaction_collection.insert_one(record_trans)
     return balance
 
