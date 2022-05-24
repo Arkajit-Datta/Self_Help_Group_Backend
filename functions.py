@@ -1,7 +1,7 @@
 import logging
 import random
 from pymongo import MongoClient
-from datetime import date
+import datetime
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
 )
@@ -295,9 +295,10 @@ def transaction_withdraw(shg_name, phone_number, amount,date,description):
     query_res_transaction  = transaction_collection.insert_one(record_trans)
     return balance
 
-def insert_story_day(date, description):
+def insert_story_day(day, month, year, description):
+    date_t = datetime.date(year,month,day)
     record = {
-        "date": date,
+        "date": str(date_t),
         "description": description
     }
 
@@ -307,17 +308,17 @@ def insert_story_day(date, description):
         logging.info("inserted the data")
         return True
     except Exception as e:
-        logging.error(result_transaction)
+        # logging.error(result_transaction)
         logging.error(e)
         logging.error(f"Error in inserting the story of day in database")
         return False
 def fetch_story_day():
-    today_date = date.today()
-    query = {"date": today_date}
+    today_date = datetime.date.today()
+    query = {"date": str(today_date)}
 
     try:
         logging.info("searching for todays story")
-        query_res = story_collection.find(query)
+        query_res = story_collection.find_one(query)
         logging.info("search completed")
     except Exception as e:
         logging.error("Error in searching todays story")
@@ -326,13 +327,13 @@ def fetch_story_day():
     if query_res is None:
         return "Story of the Day will be updated soon!!! Stay Tuned!"
     else:
-        description = query_res["description"]
+        description = query_res['description']
         return description
 
 def insert_events(heading, description):
     record = {
         "heading": heading,
-        "descritpion": description
+        "description": description
     }
 
     try:
@@ -351,10 +352,17 @@ def fetch_events():
         logging.info("finding 3 random ongoin events in then database")
         query_res = events_collection.aggregate([{ "$sample": {"size": 3}}])
         logging.info("the searching of the random evnts completed")
-        return list(query_res)
+        result = []
+        for documents in query_res:
+            temp = {
+                "heading": documents['heading'],
+                "description": documents['description']
+            }
+            result.append(temp)
+        return result
     except Exception as e:
         logging.error("Error in finding 3 random events")
-        logging.error(e)
+        logging.error(e.format_exc())
         return "nil"
         
     
@@ -368,4 +376,4 @@ Testing Purpose
 # JoinSelfHelpGroup("New_group","8658322524")
 # transaction_withdraw("New_group", "9493786234", 1000)
 # print(SeeProfile("9515617916"))
-# print(fetch_events())
+print(fetch_events())

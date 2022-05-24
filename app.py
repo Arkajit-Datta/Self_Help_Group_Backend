@@ -68,7 +68,9 @@ class transactionDepositRequest(BaseModel):
     descrption : str 
 
 class storyDayRequest(BaseModel):
-    date: date
+    day: int
+    month: int
+    year: int
     description : str
 
 class eventsRequest(BaseModel):
@@ -359,17 +361,20 @@ post api --> admin where we can give the date and the description inputs
 
 get api --> fetch the description 
 '''
-@app.post("/storyOfTheDay")
+@app.post("/insertStory")
 def story(req: storyDayRequest):
-    date = req.date
+    day = req.day
+    month = req.month
+    year = req.year
     description = req.description
+    result = False
     try:
-        result = insert_story_day(date, description)
+        result = insert_story_day(day, month, year, description)
     except Exception as e:
         logging.error(e)
         logging.error("error in executing the request")
 
-    if result== False:
+    if result == False:
         return JSONResponse(
             status_code=404,
             content={
@@ -385,7 +390,7 @@ def story(req: storyDayRequest):
             }
         )
 
-@app.post("/events")
+@app.post("/insertEvents")
 def events(req: eventsRequest):
     heading = req.headings
     description = req.description
@@ -410,7 +415,8 @@ def events(req: eventsRequest):
               
             }
         )
-@app.get("/getStory")
+
+@app.get("/fetchStory")
 def getStory():
     try:
          response = fetch_story_day()
@@ -440,6 +446,7 @@ def getStory():
             status_code=404,
             content={
                 "message": "There was an error in getting the story",
+                "Story" : "Story will be updated soon"
             }
         )
 
@@ -454,7 +461,7 @@ def getEvents():
             status_code=400,
             content={
                 "message": "There was an error in getting the events",
-                "Event" : "Events will be updated soon"
+                "Event" : [{'heading': "Will be updated soon", 'description': "Will be updated soon"},{'heading': "Will be updated soon", 'description': "Will be updated soon"},{'heading': "Will be updated soon", 'description': "Will be updated soon"}]
             }
         )
 
@@ -473,6 +480,7 @@ def getEvents():
             status_code=404,
             content={
                 "message": "There was an error in getting the event",
+                "Events": [{'heading': "Will be updated soon", 'description': "Will be updated soon"},{'heading': "Will be updated soon", 'description': "Will be updated soon"},{'heading': "Will be updated soon", 'description': "Will be updated soon"}] 
             }
         )
 
