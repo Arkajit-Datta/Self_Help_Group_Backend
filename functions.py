@@ -292,13 +292,21 @@ def transaction_withdraw(shg_name, phone_number, amount,date,description):
     query_res_transaction  = transaction_collection.insert_one(record_trans)
     return balance
 
+def insert_story_day(date, descrition):
 
+def fetch_story_day():
+    return str
+
+def insert_events(heading, description):
+
+def fetch_events():
+    return str
 '''
 Testing Purpose
 '''
 # print(CheckUserExists("9493546827"))
 # print(CheckUserExists("9493786234"))
-print(AddSelfHelpGroup("9493546827",["8197100734"],"Ram_nath Funds","hyderabad",9000))
+# print(AddSelfHelpGroup("9493546827",["8197100734"],"Ram_nath Funds","hyderabad",9000))
 # SearchSelfHelpGroup("vellore")
 # JoinSelfHelpGroup("New_group","8658322524")
 # transaction_withdraw("New_group", "9493786234", 1000)
