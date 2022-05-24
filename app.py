@@ -306,7 +306,7 @@ Takes the input of SHG name, phone number of the user and amount to be withdrawn
 @app.post("/withdrawAmount")
 def withdraw(req: withdrawRequest):
     shg_name = req.shg_name
-    phone_number = req.phone_name
+    phone_number = req.phone_number
     amount = req.amount
 
     try:

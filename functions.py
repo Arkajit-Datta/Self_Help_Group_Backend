@@ -66,17 +66,18 @@ def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, locatio
     total_number_members = len(list_of_incomes)
     sum_of_incomes = sum(list_of_incomes)
     average_annual_income = sum_of_incomes/total_number_members
-
+    average_annual_income = int(average_annual_income)
+    print(average_annual_income)
     #estimating the range and assurance rate 
-    if average_annual_income>20000:
+    if int(average_annual_income)>=20000:
         range = "High"
-    elif average_annual_income>10000 and average_annual_income<20000:
+    elif int(average_annual_income)>10000 and int(average_annual_income)<20000:
         range = "Mid"
-    elif average_annual_income<10000:
+    elif int(average_annual_income)<=10000:
         range = "Low"
     #random integer for assurance rate 
     assurance_rate = random.randint(90,100)
-
+    print(range)
     #making the record for insesrtion
     record = {
         "phone_number_admin": admin_phone_number,
@@ -291,8 +292,9 @@ def transaction_withdraw(shg_name, phone_number, amount):
 '''
 Testing Purpose
 '''
+# print(CheckUserExists("9493546827"))
 # print(CheckUserExists("9493786234"))
-# AddSelfHelpGroup("968982900773",["9493786234"],"test_group","vellore",9000)
+print(AddSelfHelpGroup("9493546827",["8197100734"],"Ram_nath Funds","hyderabad",9000))
 # SearchSelfHelpGroup("vellore")
 # JoinSelfHelpGroup("New_group","8658322524")
 # transaction_withdraw("New_group", "9493786234", 1000)
