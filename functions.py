@@ -376,4 +376,4 @@ Testing Purpose
 # JoinSelfHelpGroup("New_group","8658322524")
 # transaction_withdraw("New_group", "9493786234", 1000)
 # print(SeeProfile("9515617916"))
-print(fetch_events())
+# print(fetch_events())
