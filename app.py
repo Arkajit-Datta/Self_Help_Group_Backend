@@ -332,6 +332,16 @@ def withdraw(req: withdrawRequest):
                 "transaction_result": 1
             }
         )
+
+
+'''
+story of the day 
+
+post api --> admin where we can give the date and the description inputs
+
+get api --> fetch the description 
+'''
+
 if __name__ == "__main__":
     uvicorn.run(
         app,
