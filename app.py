@@ -89,7 +89,7 @@ def root():
         }
     )
 
-@app.post("/signup/")
+@app.post("/signUp/")
 def signup(
     aadhar: UploadFile = File(...),
     pan: UploadFile = File(...),
@@ -135,7 +135,69 @@ def signup(
         }
     )
 
-@app.post("/createshg")
+
+@app.post("/login")
+def doLogin(
+    phone_number: str = Form(...),
+    password: str = Form(...)  ):
+
+    logging.info(f"Recieved phone number --> {phone_number}, Password --> {password}")
+    
+    try:
+        result = login(phone_number, password)
+    except Exception as e:
+        logging.error("error in executing the login function")
+        logging.error(e)
+        return JSONResponse(
+            status_code = 404,
+            content = {
+                "login_status": 0,
+                "message": "Please loging after some time!"
+            }
+        )
+    if result == 1:
+        return JSONResponse(
+            status_code = 200,
+            content = {
+                "login_status": 1,
+                "message": "User Logged In Successfully! "
+            }
+        )
+    elif result == 404:
+        return JSONResponse(
+            status_code = 404,
+            content = {
+                "login_status": 0,
+                "message": "Please loging after some time!"
+            }
+        )
+    elif result == 0:
+        return JSONResponse(
+            status_code = 200,
+            content = {
+                "login_status": 0,
+                "message": "Wrong Password, Check the Password and try again!"
+            }
+        )
+    elif result == -1:
+        return JSONResponse(
+            status_code = 200,
+            content = {
+                "login_status": -1,
+                "message": "User Doesn't Exist in the System, Please Signup first!"
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code = 404,
+            content = {
+                "login_status": 0,
+                "message": "Please loging after some time!"
+            }
+        )
+        
+        
+@app.post("/createShg")
 def createshg(
     name: str = Form(...),
     admin_phone_number: str = Form(...),

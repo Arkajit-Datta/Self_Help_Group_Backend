@@ -2,6 +2,7 @@ import logging
 import random
 from pymongo import MongoClient
 import datetime
+
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
 )
@@ -45,7 +46,35 @@ def doSignup(name, phone_number, password, age, location, annual_income,aadhar_p
         logging.error(result_transaction)
         logging.error(e)
         logging.error(f"Error in inserting the users data --> {name}")
+
+#adding the login functionality
+def login(phone_number, password):
+    logging.info(f"Checking the username and password for the user {phone_number}")
+    #query for checking the phone_number
     
+    query = {
+        "phone_number": phone_number
+    }
+    try:
+        query_res = users_collection.find_one(query)
+    except Exception as e:
+        logging.error("Error in fetching the login data from the users collection")
+        logging.error(e)
+        return 404  #database read error
+    
+    if query_res is None:
+        logging.info(f"User doesn't exist in the system phone number tried logging --> {phone_number}")
+        return -1 #user doesn't exist in the system
+
+    else:
+        password_retrieved = query_res["password"]
+        if password == password_retrieved:
+            logging.info("User successfully logged into the system")
+            return 1 #user exists in the systema and the logging was successful
+        else:
+            logging.info(f"User provided a wrong password, preventing from logging --> {phone_number}")
+            return 0
+
 def AddSelfHelpGroup(admin_phone_number, member_phone_number_list, name, location, initial_balance):
     #need to check whether admin exists or not 
     logging.info(f"checking if admin exists admin phone number {admin_phone_number}")
