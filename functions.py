@@ -236,18 +236,23 @@ def SeeProfile(phone_number):
     if query_res is None:
         return 0
     else:
+        if query_res["admin"] == True:
+            user_details["admin"] = 1
+        else:
+            user_details["admin"] = 0
         user_details["name"] = query_res["name"]
         user_details["phone_number"] = query_res["phone_number"]
         user_details["age"] = query_res["age"]
         user_details["location"] = query_res["location"]
         user_details["annual_income"] = query_res["annual_income"]
+        
 
         try:
             shg_id = query_res["shg_id"]
             print(shg_id)
             if shg_id == 0:
                 user_details["shg_name"] = "No Self Help Groups Joined"
-                user_details["admin"] = "Not an Admin"
+                user_details["admin"] = 0
                 return user_details
             else:
                 try:
