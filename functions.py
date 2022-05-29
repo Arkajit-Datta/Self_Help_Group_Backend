@@ -262,6 +262,16 @@ def SeeProfile(phone_number):
         except Exception as e:
             logging.error(e)
 
+#For searching the details of the shg
+def shg_details(shg_name):
+    try:
+        query_res = shg_collection.find_one({"name": shg_name})
+    except Exception as e:
+        logging.error(e)   
+
+    #deleting the shg id
+    del query_res['_id']
+    return query_res
 
 #For executing the transaction
 def transaction_deposit(shg_name, phone_number, amount,date, description):
@@ -406,3 +416,4 @@ Testing Purpose
 # transaction_withdraw("New_group", "9493786234", 1000)
 # print(SeeProfile("9515617916"))
 # print(fetch_events())
+# print(shg_details("RamKrishnan Funds"))

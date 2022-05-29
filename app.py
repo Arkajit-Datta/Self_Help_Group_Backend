@@ -78,7 +78,8 @@ class eventsRequest(BaseModel):
     headings : str
     description : str
 
-
+class shgDetailsRequest(BaseModel):
+    shg_name: str
     
 @app.get("/")
 def root():
@@ -287,6 +288,29 @@ def searchShg(req:searchRequest):
                 "message":result
             }
         )
+@app.post("/shgDetails")
+def shgDetails(req: shgDetailsRequest):
+    shg_name = req.shg_name
+
+    try:
+        result = shg_details(shg_name=shg_name)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "shg details fetched succcessfully",
+                "shg_arr": result
+            }
+        )
+    
+    except Exception as e:
+        logging.error("Issue during fetching the details of the shg")
+        return JSONResponse(
+            status_code=404,
+            content={
+                "message": "didnt work properly",
+                "shg_arr": "error in finding the shg"
+            }
+        )
     
 
 #This api will facilitiate the joining process of a person in a SHG
@@ -336,7 +360,7 @@ def depositAmount(req: transactionDepositRequest):
     date = req.date
     description = req.descrption
     try:
-        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount,date=date, description=descri)
+        result= transaction_deposit(shg_name=shg_name,phone_number=user_phone_number,amount=amount,date=date, description=description)
     except Exception as e:
         logging.error(e)
         logging.error("error in amount deposit function")
