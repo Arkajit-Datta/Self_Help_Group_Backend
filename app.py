@@ -13,6 +13,7 @@ import shutil
 import os
 from functions import *
 from datetime import datetime,date,time
+from typing import Optional
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
@@ -91,8 +92,8 @@ def root():
 
 @app.post("/signUp/")
 def signup(
-    aadhar: UploadFile = File(...),
-    pan: UploadFile = File(...),
+    aadhar: Optional[UploadFile] = File(None),
+    pan: Optional[UploadFile] = File(None),
     name: str = Form(...),
     phone_number: str = Form(...),
     password: str = Form(...),
@@ -100,8 +101,37 @@ def signup(
     location: str = Form(...),
     annual_income: int = Form(...)):
 
-    aadhar_filename = aadhar.filename
-    pan_filename = pan.filename
+
+    path_aadhar = "Aadhar_files"
+    path_pan = "Pan_files"
+
+    if aadhar != None:
+        aadhar_filename = aadhar.filename
+        path_aadhar_final = os.path.join(path_aadhar,aadhar_filename)
+        try:
+            logging.info("saving the aadhar")
+            with open(path_aadhar_final,"wb") as buffer:
+                shutil.copyfileobj(aadhar.file, buffer)  
+                logging.info("aadhar saved!!")   
+        except Exception as e:
+            logging.error(e)
+            logging.error("the file saving process didnt work properly")
+    else:
+        path_aadhar_final = "Aadhar is not uploaded"
+
+    if pan != None:
+        pan_filename = pan.filename
+        path_pan_final = os.path.join(path_pan,pan_filename)
+        try:
+            logging.info("saving the pan")   
+            with open(path_pan_final,"wb") as buffer1:
+                shutil.copyfileobj(pan.file, buffer1)      
+                logging.info("pan saved!!")
+        except Exception as e:
+            logging.error(e)
+            logging.error("the file saving process didnt work properly")
+    else:
+        path_pan_final = "Pan File is not uploaded"
 
     name = name
     phone_number = phone_number
@@ -109,22 +139,8 @@ def signup(
     age = age
     location = location
     annual_income = annual_income
-    path_aadhar = "Aadhar_files"
-    path_pan = "Pan_files"
-    path_aadhar_final = os.path.join(path_aadhar,aadhar_filename)
-    path_pan_final = os.path.join(path_pan,pan_filename)
 
-    try:
-        logging.info("saving the aadhar and pan")
-        with open(path_aadhar_final,"wb") as buffer:
-            shutil.copyfileobj(aadhar.file, buffer)     
-        with open(path_pan_final,"wb") as buffer1:
-            shutil.copyfileobj(pan.file, buffer1)      
-        logging.info("saved!!")
-    except Exception as e:
-        logging.error(e)
-        logging.error("the file saving process didnt work properly")
-
+    
     doSignup(name=name, phone_number=phone_number, password=password, age=age, location=location, annual_income=annual_income, aadhar_path=path_aadhar_final, pan_path=path_pan_final)
 
     return JSONResponse(
